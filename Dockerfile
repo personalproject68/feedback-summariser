@@ -18,7 +18,5 @@ COPY . .
 # Expose ports for FastAPI and Streamlit
 EXPOSE 8000 8501
 
-# Make start script executable
-RUN chmod +x start.sh
-
-CMD ["./start.sh"] 
+# Run both services using a shell command
+CMD uvicorn app.main:app --host 0.0.0.0 --port 8000 & streamlit run app_ui.py --server.port 8501 --server.address 0.0.0.0 && fg 
