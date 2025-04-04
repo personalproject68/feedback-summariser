@@ -1,10 +1,21 @@
 import streamlit as st
 import requests
 from datetime import datetime
+import os
 
-API_URL = "http://localhost:8000"
+def parse_datetime(dt_str):
+    """Parse datetime string from Supabase."""
+    try:
+        # First try the simple ISO format
+        return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+    except ValueError:
+        # If that fails, try parsing with explicit format
+        return datetime.strptime(dt_str.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
-st.title("📝 Feedback Portal")
+# Use environment variable for API URL, fallback to localhost for development
+API_URL = os.getenv('API_URL', 'http://localhost:8000')
+
+st.title("�� Feedback Portal")
 
 # Create tabs for different sections
 tab1, tab2, tab3 = st.tabs(["Submit Feedback", "View Feedback", "Summaries"])
@@ -67,7 +78,7 @@ with tab2:
         # Display messages
         st.markdown("### Recent Feedback")
         for item in messages:
-            with st.expander(f"{item['name']} - {datetime.fromisoformat(item['created_at']).strftime('%Y-%m-%d %H:%M')}"):
+            with st.expander(f"{item['name']} - {parse_datetime(item['created_at']).strftime('%Y-%m-%d %H:%M')}"):
                 st.write(item["message"])
     else:
         st.error("Could not fetch messages.")
@@ -82,7 +93,7 @@ with tab3:
     if summaries_resp.status_code == 200:
         summaries = summaries_resp.json()["summaries"]
         for summary in summaries:
-            with st.expander(f"Summary from {datetime.fromisoformat(summary['created_at']).strftime('%Y-%m-%d %H:%M')} ({summary.get('feedback_count', 0)} messages)"):
+            with st.expander(f"Summary from {parse_datetime(summary['created_at']).strftime('%Y-%m-%d %H:%M')} ({summary.get('feedback_count', 0)} messages)"):
                 # Display the summary in a cleaner format
                 st.markdown("### Summary Analysis")
                 st.markdown(summary["summary"].strip())

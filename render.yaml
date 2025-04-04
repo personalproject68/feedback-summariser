@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: feedback-portal
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OPENROUTER_API_KEY
+        fromService:
+          name: feedback-portal
+          type: env
+          property: envVar
+      - key: SUPABASE_URL
+        fromService:
+          name: feedback-portal
+          type: env
+          property: envVar
+      - key: SUPABASE_KEY
+        fromService:
+          name: feedback-portal
+          type: env
+          property: envVar
+      - key: API_URL
+        value: https://${RENDER_SERVICE_NAME}.onrender.com
+    healthCheckPath: /ping
+    autoDeploy: true 
