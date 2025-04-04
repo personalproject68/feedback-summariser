@@ -1,13 +1,46 @@
-# AI Coding Agent
+# Feedback Portal
 
-This project is an AI coding agent that helps with various coding tasks.
+A feedback management system built with FastAPI and Streamlit, featuring automatic feedback summarization using AI.
 
-## Setup
+## Features
 
-1. Create a virtual environment:
+- Submit feedback through a user-friendly interface
+- View all submitted feedback
+- Generate AI-powered summaries of feedback
+- View feedback summaries with original messages
+- Integration with Supabase for data storage
+- OpenRouter API integration for AI summaries
+
+## Tech Stack
+
+- Backend: FastAPI
+- Frontend: Streamlit
+- Database: Supabase
+- AI: OpenRouter API (Mixtral-8x7B)
+- Containerization: Docker
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Supabase account and project
+- OpenRouter API key
+
+## Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+```
+
+## Local Development
+
+1. Clone the repository:
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+git clone <repository-url>
+cd feedback-portal
 ```
 
 2. Install dependencies:
@@ -15,58 +48,43 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables:
-Create a `.env` file with your Supabase credentials:
-```
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-```
-
-## Running the FastAPI Server
-
-To run the FastAPI server, use the following command:
-
+3. Run the FastAPI server:
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
-The server will start at `http://localhost:8000`. You can test the endpoints:
-
-### GET /hello
-- Visit `http://localhost:8000/hello` in your browser
-- Or using curl: `curl http://localhost:8000/hello`
-
-### GET /ping
-- Visit `http://localhost:8000/ping` in your browser
-- Or using curl: `curl http://localhost:8000/ping`
-
-### GET /messages
-View all submitted feedback:
+4. Run the Streamlit app:
 ```bash
-curl http://localhost:8000/messages
+streamlit run app_ui.py
 ```
 
-### POST /submit
-Submit feedback with name and message:
+## Docker Deployment
+
+1. Build and run with Docker Compose:
 ```bash
-curl -X POST http://localhost:8000/submit \
-  -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "message": "Great work!"}'
+docker-compose up --build
 ```
 
-The API documentation will be available at:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+2. Access the applications:
+- FastAPI: http://localhost:8000
+- Streamlit UI: http://localhost:8501
 
-## Database Setup
+## API Endpoints
 
-The project uses Supabase for data storage. Make sure to:
+- `POST /submit`: Submit new feedback
+- `GET /messages`: Get all feedback messages
+- `POST /summarize`: Generate summary of feedback
+- `GET /summaries`: Get all generated summaries
 
-1. Create a `feedback` table in your Supabase project with the following columns:
-   - `id` (uuid, primary key)
-   - `name` (text)
-   - `message` (text)
-   - `created_at` (timestamp with time zone, default: now())
+## Database Schema
 
-2. Enable Row Level Security (RLS) if needed
-3. Set up appropriate policies for the `feedback` table
+### Feedback Table
+- name: string
+- message: string
+- created_at: timestamp
+
+### Summaries Table
+- summary: string
+- feedback_count: integer
+- created_at: timestamp
+- feedback_messages: json array

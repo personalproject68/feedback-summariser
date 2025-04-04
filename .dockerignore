@@ -1,3 +1,7 @@
+# Git
+.git
+.gitignore
+
 # Python
 __pycache__/
 *.py[cod]
@@ -32,19 +36,13 @@ ENV/
 *.swp
 *.swo
 
+# Docker
+Dockerfile
+.dockerignore
+
 # Logs
 *.log
 
 # Local development
 .DS_Store
-node_modules/
-
-# Environment variables
-.env
-.env.local
-
-# Mac
-.DS_Store
-
-# Cursor
-.cursor/
+node_modules/ 
