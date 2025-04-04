@@ -1,13 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from app.supabase_client import supabase
+from app.supabase import supabase
 
 app = FastAPI()
 
-# Global storage for feedback
-feedback = []
-
-class FeedbackRequest(BaseModel):
+class Feedback(BaseModel):
     name: str
     message: str
 
@@ -20,22 +17,37 @@ async def ping():
     return "pong"
 
 @app.post("/submit")
-def submit_feedback(data: FeedbackRequest):
-    response = supabase.table("feedback").insert({
-        "name": data.name,
-        "message": data.message
-    }).execute()
-
-    if response.status_code != 201:
-        raise HTTPException(status_code=500, detail="Failed to insert into database")
-
-    return {"status": "success", "data": response.data}
+async def submit_feedback(feedback_item: Feedback):
+    try:
+        print(f"Received feedback from {feedback_item.name}")
+        # Insert feedback into Supabase
+        data = supabase.table("feedback").insert({
+            "name": feedback_item.name,
+            "message": feedback_item.message
+        }).execute()
+        
+        print(f"Successfully stored feedback in Supabase: {data.data}")
+        return {
+            "status": "success",
+            "message": "Feedback submitted successfully",
+            "data": data.data[0]
+        }
+    except Exception as e:
+        print(f"Error storing feedback in Supabase: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/messages")
-def get_messages():
-    response = supabase.table("feedback").select("*").order("created_at", desc=True).execute()
-
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail="Failed to fetch data from database")
-
-    return {"status": "success", "count": len(response.data), "messages": response.data}
+async def get_messages():
+    try:
+        print("Fetching messages from Supabase")
+        # Get all feedback from Supabase
+        data = supabase.table("feedback").select("*").execute()
+        print(f"Retrieved {len(data.data)} messages from Supabase")
+        return {
+            "status": "success",
+            "count": len(data.data),
+            "messages": data.data
+        }
+    except Exception as e:
+        print(f"Error fetching messages from Supabase: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e)) 
