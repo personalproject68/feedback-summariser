@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from app.supabase_client import supabase
 
 app = FastAPI()
 
 # Global storage for feedback
 feedback = []
 
-class Feedback(BaseModel):
+class FeedbackRequest(BaseModel):
     name: str
     message: str
 
@@ -19,18 +20,22 @@ async def ping():
     return "pong"
 
 @app.post("/submit")
-async def submit_feedback(feedback_item: Feedback):
-    feedback.append(feedback_item.dict())
-    return {
-        "status": "success",
-        "message": "Feedback submitted successfully",
-        "data": feedback_item.dict()
-    }
+def submit_feedback(data: FeedbackRequest):
+    response = supabase.table("feedback").insert({
+        "name": data.name,
+        "message": data.message
+    }).execute()
+
+    if response.status_code != 201:
+        raise HTTPException(status_code=500, detail="Failed to insert into database")
+
+    return {"status": "success", "data": response.data}
 
 @app.get("/messages")
-async def get_messages():
-    return {
-        "status": "success",
-        "count": len(feedback),
-        "messages": feedback
-    }
+def get_messages():
+    response = supabase.table("feedback").select("*").order("created_at", desc=True).execute()
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to fetch data from database")
+
+    return {"status": "success", "count": len(response.data), "messages": response.data}
